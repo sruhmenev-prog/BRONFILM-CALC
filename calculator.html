@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Калькулятор бронеплівки PRO</title>
+    <!-- PWA Setup -->
+    <meta name="theme-color" content="#1e293b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Бронеплівка">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans pb-10 transition-colors duration-200">
+
+    <div class="max-w-md mx-auto px-4 py-6">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-2">
+                <i data-lucide="shield-check" class="w-8 h-8 text-blue-500"></i>
+                <h1 class="text-xl font-bold tracking-wide">Бронеплівка PRO</h1>
+            </div>
+            <button id="themeToggleBtn" class="p-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+                <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+            </button>
+        </header>
+
+        <!-- Main Form -->
+        <div class="space-y-4">
+            <!-- Film Type Selection -->
+            <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
+                <label class="block text-sm font-medium text-slate-300 mb-2">Товщина плівки</label>
+                <select id="filmTypeSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="100">100 мкм (Економ захист)</option>
+                    <option value="200">200 мкм (Базовий захист)</option>
+                    <option value="300" selected>300 мкм (Клас А1 — Протиударна)</option>
+                    <option value="400">400 мкм (Клас А2/А3 — Посилена)</option>
+                </select>
+            </div>
+
+            <!-- Add Window Item Form -->
+            <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
+                <h2 class="text-md font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-5 h-5 text-blue-400"></i> Додати склопакет
+                </h2>
+                
+                <div class="mb-3">
+                    <label class="block text-xs text-slate-400 mb-1">Назва / Приміщення (необов'язково)</label>
+                    <input type="text" id="roomInput" placeholder="Наприклад: Зала, Спальня, Офіс" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Ширина (мм)</label>
+                        <input type="number" id="widthInput" placeholder="800" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white text-center font-semibold text-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Висота (мм)</label>
+                        <input type="number" id="heightInput" placeholder="1400" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white text-center font-semibold text-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between bg-slate-900 p-2.5 rounded-lg border border-slate-700 mb-4">
+                    <span class="text-xs text-slate-400 font-medium">Кількість склопакетів:</span>
+                    <div class="flex items-center gap-3">
+                        <button id="decQtyBtn" class="w-8 h-8 rounded-md bg-slate-800 text-xl font-bold flex items-center justify-center hover:bg-slate-700 text-slate-200">-</button>
+                        <span id="qtyVal" class="font-bold text-lg w-6 text-center">1</span>
+                        <button id="incQtyBtn" class="w-8 h-8 rounded-md bg-slate-800 text-xl font-bold flex items-center justify-center hover:bg-slate-700 text-slate-200">+</button>
+                    </div>
+                </div>
+
+                <button id="addItemBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md flex items-center justify-center gap-2 transition active:scale-98">
+                    <i data-lucide="plus" class="w-5 h-5"></i> Додати позицію
+                </button>
+            </div>
+
+            <!-- List of Glass Items -->
+            <div id="itemsContainer" class="space-y-2">
+                <!-- Items inserted dynamically -->
+            </div>
+
+            <!-- Extra Options -->
+            <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-3">
+                <h2 class="text-md font-semibold text-slate-200 mb-2 flex items-center gap-2">
+                    <i data-lucide="sliders" class="w-5 h-5 text-blue-400"></i> Опції та коефіцієнти
+                </h2>
+                
+                <div class="flex justify-between items-center py-2 border-b border-slate-700">
+                    <span class="text-sm text-slate-300">Запас на раскрій (%)</span>
+                    <input type="number" id="wasteMarginInput" value="15" class="w-16 bg-slate-900 border border-slate-700 rounded text-center p-1 font-semibold text-sm">
+                </div>
+
+                <div class="flex justify-between items-center py-2 border-b border-slate-700">
+                    <span class="text-sm text-slate-300">Монтаж за склопакет (грн)</span>
+                    <input type="number" id="installFeeInput" value="500" class="w-20 bg-slate-900 border border-slate-700 rounded text-center p-1 font-semibold text-sm">
+                </div>
+
+                <label class="flex items-center justify-between py-1 cursor-pointer">
+                    <span class="text-sm text-slate-300">Робота на висоті / риштовання (+20%)</span>
+                    <input type="checkbox" id="heightOption" class="w-5 h-5 rounded accent-blue-600">
+                </label>
+
+                <label class="flex items-center justify-between py-1 cursor-pointer">
+                    <span class="text-sm text-slate-300">Демонтаж старої плівки (+100 грн/м²)</span>
+                    <input type="checkbox" id="demountOption" class="w-5 h-5 rounded accent-blue-600">
+                </label>
+            </div>
+
+            <!-- Financial Settings (Roll Cost & Margin) -->
+            <details class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+                <summary class="text-xs text-slate-400 font-semibold cursor-pointer uppercase tracking-wider flex justify-between items-center">
+                    <span>⚙️ Налаштування собівартості рулона</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                </summary>
+                <div class="mt-4 space-y-3 pt-3 border-t border-slate-700">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Вартість рулона (грн)</label>
+                        <input type="number" id="rollPriceInput" value="16000" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Ширина рулона (м)</label>
+                            <input type="number" step="0.01" id="rollWidthInput" value="1.52" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Довжина (м)</label>
+                            <input type="number" id="rollLengthInput" value="30" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white">
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <!-- Total Output Card -->
+            <div class="bg-gradient-to-br from-blue-900/50 to-slate-800 p-5 rounded-xl border border-blue-500/30 shadow-xl space-y-3">
+                <div class="flex justify-between items-center text-sm text-slate-300">
+                    <span>Загальна площа (чиста):</span>
+                    <span id="totalNetArea" class="font-bold text-white">0.00 м²</span>
+                </div>
+                <div class="flex justify-between items-center text-sm text-slate-300">
+                    <span>Всього склопакетів:</span>
+                    <span id="totalGlasses" class="font-bold text-white">0 шт.</span>
+                </div>
+                <div class="flex justify-between items-center text-sm text-slate-300">
+                    <span>Матеріал (з розкроєм):</span>
+                    <span id="matTotalCost" class="font-bold text-white">0 грн</span>
+                </div>
+                <div class="flex justify-between items-center text-sm text-slate-300 border-b border-slate-700/60 pb-3">
+                    <span>Монтажні роботи:</span>
+                    <span id="installTotalCost" class="font-bold text-white">0 грн</span>
+                </div>
+
+                <div class="flex justify-between items-center pt-1">
+                    <span class="text-base font-bold text-slate-100">РАЗОМ ДО СПЛАТИ:</span>
+                    <span id="grandTotal" class="text-2xl font-extrabold text-blue-400">0 грн</span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="grid grid-cols-2 gap-3">
+                <button id="openShareModalBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition">
+                    <i data-lucide="send" class="w-5 h-5"></i> Надіслати
+                </button>
+                <button id="copyEstimateBtn" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-semibold py-3 px-4 rounded-xl shadow-md flex items-center justify-center gap-2 transition">
+                    <i data-lucide="copy" class="w-5 h-5"></i> Скопіювати
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white">Оберіть месенджер</h3>
+                <button id="closeModalBtn" class="text-slate-400 hover:text-white p-1">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-3 pt-2">
+                <button id="shareTelegramBtn" class="w-full bg-[#24A1DE] hover:opacity-90 text-white font-medium py-3 rounded-xl flex items-center justify-center gap-3">
+                    <i data-lucide="send" class="w-5 h-5"></i> Надіслати у Telegram
+                </button>
+                <button id="shareViberBtn" class="w-full bg-[#7360F2] hover:opacity-90 text-white font-medium py-3 rounded-xl flex items-center justify-center gap-3">
+                    <i data-lucide="phone-call" class="w-5 h-5"></i> Надіслати у Viber
+                </button>
+                <button id="shareNativeBtn" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-xl flex items-center justify-center gap-3">
+                    <i data-lucide="share-2" class="w-5 h-5"></i> Системне меню Share
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-semibold shadow-2xl transition opacity-0 pointer-events-none z-50 flex items-center gap-2">
+        <i data-lucide="check-circle" class="w-4 h-4"></i> <span id="toastMsg">Кошторис скопійовано!</span>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        lucide.createIcons();
+        let currentQty = 1;
+        let glassItems = JSON.parse(localStorage.getItem('armor_items') || '[]');
+
+        const widthInput = document.getElementById('widthInput');
+        const heightInput = document.getElementById('heightInput');
+        const roomInput = document.getElementById('roomInput');
+        const qtyVal = document.getElementById('qtyVal');
+        const addItemBtn = document.getElementById('addItemBtn');
+        const itemsContainer = document.getElementById('itemsContainer');
+        const filmTypeSelect = document.getElementById('filmTypeSelect');
+
+        const wasteMarginInput = document.getElementById('wasteMarginInput');
+        const installFeeInput = document.getElementById('installFeeInput');
+        const heightOption = document.getElementById('heightOption');
+        const demountOption = document.getElementById('demountOption');
+
+        const rollPriceInput = document.getElementById('rollPriceInput');
+        const rollWidthInput = document.getElementById('rollWidthInput');
+        const rollLengthInput = document.getElementById('rollLengthInput');
+
+        document.getElementById('incQtyBtn').onclick = () => { currentQty++; qtyVal.innerText = currentQty; };
+        document.getElementById('decQtyBtn').onclick = () => { if (currentQty > 1) { currentQty--; qtyVal.innerText = currentQty; } };
+
+        addItemBtn.onclick = () => {
+            const w = parseFloat(widthInput.value);
+            const h = parseFloat(heightInput.value);
+            const room = roomInput.value.trim();
+
+            if (!w || !h || w <= 0 || h <= 0) {
+                showToast('Введіть ширину та висоту в мм!');
+                return;
+            }
+
+            const item = {
+                id: Date.now(),
+                room: room || `Позиція ${glassItems.length + 1}`,
+                w: w,
+                h: h,
+                qty: currentQty
+            };
+
+            glassItems.push(item);
+            saveAndRender();
+
+            widthInput.value = '';
+            heightInput.value = '';
+            roomInput.value = '';
+            currentQty = 1;
+            qtyVal.innerText = '1';
+        };
+
+        function deleteItem(id) {
+            glassItems = glassItems.filter(i => i.id !== id);
+            saveAndRender();
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('armor_items', JSON.stringify(glassItems));
+            renderItems();
+            calculateTotals();
+        }
+
+        function renderItems() {
+            itemsContainer.innerHTML = '';
+            if (glassItems.length === 0) {
+                itemsContainer.innerHTML = `<p class="text-center text-xs text-slate-500 py-2">Склопакети ще не додано</p>`;
+                return;
+            }
+
+            glassItems.forEach((item, index) => {
+                const area = ((item.w / 1000) * (item.h / 1000) * item.qty).toFixed(2);
+                const el = document.createElement('div');
+                el.className = 'bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center';
+                el.innerHTML = `
+                    <div>
+                        <div class="font-semibold text-sm text-slate-200">${index + 1}. ${item.room}</div>
+                        <div class="text-xs text-slate-400">${item.w} × ${item.h} мм | ${item.qty} шт. (${area} м²)</div>
+                    </div>
+                    <button onclick="deleteItem(${item.id})" class="text-red-400 hover:text-red-300 p-1">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                `;
+                itemsContainer.appendChild(el);
+            });
+            lucide.createIcons();
+        }
+
+        function calculateTotals() {
+            let totalNetArea = 0;
+            let totalGlasses = 0;
+
+            glassItems.forEach(item => {
+                totalNetArea += (item.w / 1000) * (item.h / 1000) * item.qty;
+                totalGlasses += item.qty;
+            });
+
+            const wastePercent = parseFloat(wasteMarginInput.value) || 0;
+            const grossArea = totalNetArea * (1 + wastePercent / 100);
+
+            const filmPricesM2 = { '100': 450, '200': 550, '300': 650, '400': 850 };
+            const m2Rate = filmPricesM2[filmTypeSelect.value] || 650;
+            const matTotal = Math.round(grossArea * m2Rate);
+
+            const installPerPiece = parseFloat(installFeeInput.value) || 500;
+            let installTotal = totalGlasses * installPerPiece;
+
+            if (demountOption.checked) {
+                installTotal += Math.round(totalNetArea * 100);
+            }
+
+            let grandTotal = matTotal + installTotal;
+
+            if (heightOption.checked) {
+                grandTotal = Math.round(grandTotal * 1.2);
+            }
+
+            document.getElementById('totalNetArea').innerText = totalNetArea.toFixed(2) + ' м²';
+            document.getElementById('totalGlasses').innerText = totalGlasses + ' шт.';
+            document.getElementById('matTotalCost').innerText = matTotal.toLocaleString('uk-UA') + ' грн';
+            document.getElementById('installTotalCost').innerText = installTotal.toLocaleString('uk-UA') + ' грн';
+            document.getElementById('grandTotal').innerText = grandTotal.toLocaleString('uk-UA') + ' грн';
+
+            return { totalNetArea, totalGlasses, matTotal, installTotal, grandTotal };
+        }
+
+        function generateTextEstimate() {
+            if (glassItems.length === 0) return '';
+            const { totalNetArea, totalGlasses, matTotal, installTotal, grandTotal } = calculateTotals();
+            const filmLabel = filmTypeSelect.options[filmTypeSelect.selectedIndex].text;
+            const waste = wasteMarginInput.value;
+
+            let text = `📋 *КОШТОРИС НА МОНТАЖ БРОНЕПЛІВКИ*\n`;
+            text += `____________________________________\n\n`;
+            text += `📍 *Перелік склопакетів:*\n`;
+
+            glassItems.forEach((item, index) => {
+                const sq = ((item.w / 1000) * (item.h / 1000) * item.qty).toFixed(2);
+                text += `${index + 1}. ${item.room} (${item.w}×${item.h} мм) — ${item.qty} шт. | ${sq} м²\n`;
+            });
+
+            text += `\n📊 *Разом:* ${totalGlasses} склопакетів | ${totalNetArea.toFixed(2)} м²\n\n`;
+            text += `🛡 *Параметри захисту:*\n`;
+            text += `• Плівка: ${filmLabel}\n`;
+            text += `• Технологічний запас: ${waste}%\n\n`;
+            text += `💵 *Розрахунок вартості:*\n`;
+            text += `• Матеріал (з розкроєм): ${matTotal.toLocaleString('uk-UA')} грн\n`;
+            text += `• Монтаж (${totalGlasses} шт. × ${installFeeInput.value} грн): ${installTotal.toLocaleString('uk-UA')} грн\n`;
+
+            if (heightOption.checked) {
+                text += `• Висотні роботи / риштовання (+20%)\n`;
+            }
+
+            text += `____________________________________\n`;
+            text += `💰 *РАЗОМ ДО СПЛАТИ: ${grandTotal.toLocaleString('uk-UA')} грн*`;
+
+            return text;
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2500);
+        }
+
+        document.getElementById('copyEstimateBtn').onclick = () => {
+            const txt = generateTextEstimate();
+            if (!txt) { showToast('Додайте склопакет!'); return; }
+            navigator.clipboard.writeText(txt).then(() => showToast('Кошторис скопійовано!'));
+        };
+
+        const shareModal = document.getElementById('shareModal');
+        document.getElementById('openShareModalBtn').onclick = () => {
+            if (glassItems.length === 0) { showToast('Додайте склопакет!'); return; }
+            shareModal.classList.remove('hidden');
+            shareModal.classList.add('flex');
+        };
+        document.getElementById('closeModalBtn').onclick = () => {
+            shareModal.classList.add('hidden');
+            shareModal.classList.remove('flex');
+        };
+
+        document.getElementById('shareTelegramBtn').onclick = () => {
+            const txt = generateTextEstimate();
+            window.open(`https://t.me/share/url?url=&text=${encodeURIComponent(txt)}`, '_blank');
+        };
+
+        document.getElementById('shareViberBtn').onclick = () => {
+            const txt = generateTextEstimate();
+            window.location.href = `viber://forward?text=${encodeURIComponent(txt)}`;
+        };
+
+        document.getElementById('shareNativeBtn').onclick = () => {
+            const txt = generateTextEstimate();
+            if (navigator.share) {
+                navigator.share({ title: 'Кошторис бронеплівки', text: txt });
+            } else {
+                navigator.clipboard.writeText(txt);
+                showToast('Скопійовано!');
+            }
+        };
+
+        [filmTypeSelect, wasteMarginInput, installFeeInput, heightOption, demountOption, rollPriceInput, rollWidthInput, rollLengthInput].forEach(el => {
+            el.onchange = calculateTotals;
+            el.oninput = calculateTotals;
+        });
+
+        document.getElementById('themeToggleBtn').onclick = () => {
+            document.documentElement.classList.toggle('dark');
+        };
+
+        renderItems();
+        calculateTotals();
+    </script>
+</body>
+</html>
